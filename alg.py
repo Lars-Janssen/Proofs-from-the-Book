@@ -1,10 +1,10 @@
 import numpy as np
-n = 9
+n = 20
 
 class array:
     def __init__(self, n):
         """
-        initializes a square of size n.
+        Initializes a square of size n.
         """
         self.n = n
         self.array = np.zeros([3,n* n])
@@ -19,17 +19,22 @@ class array:
 
     def add(self, elements):
         """
-        adds elements to the array.
+        Adds elements to the array.
         """
         for e in elements:
             for i in range(self.n * self.n):
-                if self.array[0,i] == e[0] and self.array[1,i] == e[1]:
+                element = [j[i] for j in self.array]
+                if element[0] == e[0] and element[1] == e[1]:
                     self.array[2,i] = e[2]
                     break
                 if i == len(self.array[0]) - 1:
                     print("element " + str(e) + " could not be added")
 
     def find(self, e):
+        """
+            Finds the element e in the array. e is described by the row and
+            collumn in the table.
+        """
         for i in range(self.n * self.n):
             element = [j[i] for j in self.array]
             if element[0] == e[0] and element[1] == e[1]:
@@ -37,14 +42,19 @@ class array:
 
     def show(self):
         """
-        displays the array as a square.
+            Displays the array as a square.
         """
+
+        #finds every element and stores it in order
+        elements = [[0 for i in range(self.n)] for j in range(self.n)]
+        for i in range(self.n * self.n):
+            elements[int(self.array[0,i])][int(self.array[1,i])] = int(self.array[2,i])
+
+        #prints the table
         for i in range(self.n):
             line = ""
             for j in range(self.n):
-                for e in range(len(self.array[0])):
-                    if self.array[0,e] == i and self.array[1,e] == j:
-                        line += str(int(self.array[2,e]))
+                line += str(elements[i][j])
                 if j != self.n - 1:
                     line += "|"
             print(line)
@@ -88,6 +98,9 @@ class array:
         self.permute(e, write)
 
     def exchange(self, e):
+        """
+            Switches 2 elements in the array.
+        """
         e0 = []
         e1 = []
 
@@ -118,19 +131,22 @@ class array:
         appearances = [0 for i in range(self.n)]
         min_row = self.n - 1
 
+        #counts how many times each number appears
         for i in range(self.n * self.n):
-
             e = int(self.array[2,i])
             if e != 0:
                 appearances[e - 1] += 1
                 if self.array[0,i] < min_row:
                     min_row = self.array[0,i]
 
+        #renumbers if there is no or there are multiple instances of self.n
         if appearances[self.n - 1] != 1:
             for i in range(len(appearances)):
                 if appearances[i] == 1:
                     self.renumber([i + 1, self.n], True)
                     break
+
+        #permutes the rows so the largest number is in the first row with numbers
         for i in range(self.n * self.n):
             if self.array[2,i] == self.n:
                 row = self.array[0,i]
@@ -138,11 +154,13 @@ class array:
                     self.permute_rows([int(min_row), int(row)], True)
                 break
 
+        #finds the amount of numbers in each row with numbers
         rows = [[] for i in range(self.n)]
         for i in range(self.n * self.n):
             if self.array[2,i] != 0:
                 rows[int(self.array[0,i])].append(self.array[2,i])
 
+        #calculates s and f
         for i in range(self.n):
             if rows[i] != []:
                 self.s.append(i)
@@ -155,18 +173,22 @@ class array:
             lower triangle and only the element size.n is on the diagonal,
             in the highest row where there are numbers.
         """
+
         if self.s != []:
+
+            #permutes the rows so they are at the right place
             self.permute_rows([self.s[0],self.f[0]-1], True)
             for i in range(1,len(self.s)):
                 dest = sum(self.f[:i+1])
                 self.permute_rows([self.s[i], dest], True)
 
-
+            #permutes the columns so every number is in the lower triangle.
             for j in range(self.n):
                 for i in range(self.n * self.n):
+                    #puts self.n on the diagonal
                     if self.array[0,i] == j and self.array[2,i] == self.n:
                         self.permute_cols([j,self.array[1,i]], True)
-
+                    #puts the other numbers in the lower triangle
                     elif self.array[0,i] == j and self.array[2,i] != 0 and self.array[1,i] >= self.array[0,i]:
                         self.permute_cols([j-1,self.array[1,i]], True)
 
@@ -177,27 +199,35 @@ class array:
         print(self.n)
         self.firststep()
         self.secondstep()
+
         to_add = []
+        #base case
         if self.n == 1:
             self.complete()
             to_add = [[0,0,1]]
+        #induction step
         else:
+            #makes a smalller latin square with every element except self.n
             smaller = array(self.n-1)
             for i in range(self.n * self.n):
                 if self.array[0,i] != 0 and self.array[1,i] != self.n - 1 and self.array[2,i] != self.n:
                     e = [self.array[0,i] - 1, self.array[1,i], self.array[2,i]]
                     to_add.append(e)
             smaller.add(to_add)
+
+            #solves the smaller square and adds the solved numbers into the array
             to_add = smaller.solve()
-
-            if self.n != 1:
-                to_add = [[to_add[i][0] + 1, to_add[i][1], to_add[i][2]] for i in range(len(to_add))]
-
+            to_add = [[to_add[i][0] + 1, to_add[i][1], to_add[i][2]] for i in range(len(to_add))]
             self.add(to_add)
+
+            #creates the last column by the swap algorithm and solves the first row
             self.swap()
             self.complete()
+
+            #reverse the swaps of the first and second step
             self.reverse()
 
+            #sends all numbers to a larger square
             to_add = []
             for i in range(self.n * self.n):
                     e = [self.array[0,i], self.array[1,i], self.array[2,i]]
@@ -206,31 +236,48 @@ class array:
         return to_add
 
     def swap(self):
+        """
+            Executes the swapping algortihm from Proofs.
+        """
         last_col = [0 for i in range(self.n)]
         for i in range(1,self.n - 1):
+            #puts self.n on the place in the last column on row i and
+            #swaps it with the number on the diagonal
             self.add([[i, self.n - 1, self.n]])
             self.exchange([[i, self.n - 1], [i, i]])
+
+
             e = self.find([i, self.n - 1])
+            #swaps elements until the last column is solved upto row i
             while(e[2] in last_col[0:int(e[0])] or e[2] in last_col[int(e[0] + 1):]):
+                #perform a swap and update the last column
                 row = last_col.index(e[2])
                 self.exchange([[row, self.n - 1], [row, i]])
-                e = self.find([row, self.n - 1])
                 last_col = [self.find([j, self.n - 1])[2] for j in range(self.n)]
-                last_col[i] = self.find([i, self.n - 1])[2]
+
+                #next element to check uniqueness of in the last column
+                e = self.find([row, self.n - 1])
+
             last_col[i] = self.find([i, self.n - 1])[2]
 
 
     def complete(self):
+        """
+            Completes the square by filling in the first row and the last element.
+        """
         self.add([[self.n - 1, self.n - 1, self.n]])
 
+        #looks which elements are in which columns
         columns = [[] for i in range(self.n)]
         for i in range(self.n * self.n):
             columns[int(self.array[1,i])].append(self.array[2,i])
 
+        #add the missing element to every column
         for i in range(len(columns)):
             for j in range(1,self.n + 1):
                 if j not in columns[i]:
                     self.add([[0, i, j]])
+                    break
 
     def check(self):
         """
@@ -259,7 +306,7 @@ class array:
 
 square = array(n)
 square.check()
-square.add([[0,0,1],[5,5,5]])
+square.add([[0,0,1],[0,1,5]])
 square.show()
 square.solve()
 square.check()

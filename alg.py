@@ -7,7 +7,7 @@ class array:
         Initializes a square of size n.
         """
         self.n = n
-        self.array = np.zeros([3,n* n])
+        self.array = np.zeros([3,n* n], dtype=int)
         self.flips = []
 
         self.s = []
@@ -48,7 +48,7 @@ class array:
         #finds every element and stores it in order
         elements = [[0 for i in range(self.n)] for j in range(self.n)]
         for i in range(self.n * self.n):
-            elements[int(self.array[0,i])][int(self.array[1,i])] = int(self.array[2,i])
+            elements[self.array[0,i]][self.array[1,i]] = self.array[2,i]
 
         #prints the table
         for i in range(self.n):
@@ -133,7 +133,7 @@ class array:
 
         #counts how many times each number appears
         for i in range(self.n * self.n):
-            e = int(self.array[2,i])
+            e = self.array[2,i]
             if e != 0:
                 appearances[e - 1] += 1
                 if self.array[0,i] < min_row:
@@ -151,14 +151,14 @@ class array:
             if self.array[2,i] == self.n:
                 row = self.array[0,i]
                 if row != min_row:
-                    self.permute_rows([int(min_row), int(row)], True)
+                    self.permute_rows([min_row, row], True)
                 break
 
         #finds the amount of numbers in each row with numbers
         rows = [[] for i in range(self.n)]
         for i in range(self.n * self.n):
             if self.array[2,i] != 0:
-                rows[int(self.array[0,i])].append(self.array[2,i])
+                rows[self.array[0,i]].append(self.array[2,i])
 
         #calculates s and f
         for i in range(self.n):
@@ -249,7 +249,7 @@ class array:
 
             e = self.find([i, self.n - 1])
             #swaps elements until the last column is solved upto row i
-            while(e[2] in last_col[0:int(e[0])] or e[2] in last_col[int(e[0] + 1):]):
+            while(e[2] in last_col[0:e[0]] or e[2] in last_col[e[0] + 1:]):
                 #perform a swap and update the last column
                 row = last_col.index(e[2])
                 self.exchange([[row, self.n - 1], [row, i]])
@@ -270,7 +270,7 @@ class array:
         #looks which elements are in which columns
         columns = [[] for i in range(self.n)]
         for i in range(self.n * self.n):
-            columns[int(self.array[1,i])].append(self.array[2,i])
+            columns[self.array[1,i]].append(self.array[2,i])
 
         #add the missing element to every column
         for i in range(len(columns)):
@@ -287,8 +287,8 @@ class array:
         cols = [[] for i in range(self.n)]
 
         for i in range(self.n * self.n):
-            rows[int(self.array[0,i])].append(self.array[2,i])
-            cols[int(self.array[1,i])].append(self.array[2,i])
+            rows[self.array[0,i]].append(self.array[2,i])
+            cols[self.array[1,i]].append(self.array[2,i])
 
         il = True
         for i in range(self.n):
